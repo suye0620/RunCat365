@@ -57,5 +57,15 @@ namespace RunCat365
                 _ => 0,
             };
         }
+
+        internal static List<Runner> GetAllRunners()
+        {
+            return new List<Runner>
+            {
+                Runner.Cat,
+                Runner.Parrot,
+                Runner.Horse
+            };
+        }
     }
 }

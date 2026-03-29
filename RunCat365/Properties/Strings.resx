@@ -234,4 +234,31 @@
   <data name="Game_NewRecord" xml:space="preserve">
     <value>New Record</value>
   </data>
+  <data name="Settings_ManageRunners" xml:space="preserve">
+    <value>Manage Runners</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_ImportGif" xml:space="preserve">
+    <value>Import GIF</value>
+  </data>
+  <data name="Settings_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Settings_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Settings_CustomRunners" xml:space="preserve">
+    <value>Custom Runners</value>
+  </data>
+  <data name="Message_ImportSuccess" xml:space="preserve">
+    <value>Successfully imported runner: {0}</value>
+  </data>
+  <data name="Message_ImportFailed" xml:space="preserve">
+    <value>Failed to import runner. Please check the GIF file.</value>
+  </data>
+  <data name="Message_RemoveSuccess" xml:space="preserve">
+    <value>Successfully removed runner: {0}</value>
+  </data>
 </root>

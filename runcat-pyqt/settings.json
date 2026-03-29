@@ -1,0 +1,8 @@
+{
+  "runner": "线条小狗小白",
+  "theme": "System",
+  "speed_source": "Memory",
+  "fps_max_limit": "FPS60",
+  "launch_at_startup": false,
+  "language": "English"
+}

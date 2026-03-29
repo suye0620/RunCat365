@@ -12,6 +12,9 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+using RunCat365.Properties;
+using System.Drawing;
+
 namespace RunCat365
 {
     internal class CustomToolStripMenuItem : ToolStripMenuItem
@@ -105,6 +108,89 @@ namespace RunCat365
                 items.Add(item);
             }
             DropDownItems.AddRange([.. items]);
+        }
+
+        internal void SetupRunnerMenu(
+            Func<Runner> getRunner,
+            Action<Runner> setRunner,
+            Func<Theme> getSystemTheme,
+            Func<Theme> getManualTheme
+        )
+        {
+            var items = new List<CustomToolStripMenuItem>();
+
+            foreach (var runner in RunnerExtension.GetAllRunners())
+            {
+                var entityName = runner.GetLocalizedString();
+                var iconImage = GetRunnerThumbnailBitmap(getSystemTheme(), getManualTheme(), runner);
+                var item = new CustomToolStripMenuItem(
+                    entityName,
+                    iconImage,
+                    runner,
+                    getRunner() == runner,
+                    (sender, e) => HandleRunnerSelection(sender, setRunner)
+                );
+                items.Add(item);
+            }
+
+            var customRunners = CustomRunnerExtension.GetCustomRunners();
+            if (customRunners.Count > 0)
+            {
+                items.Add(new CustomToolStripMenuItem("-"));
+                foreach (var runner in customRunners)
+                {
+                    var entityName = runner.GetLocalizedString();
+                    var iconImage = runner.GetRunnerThumbnailBitmap(getManualTheme() == Theme.System ? getSystemTheme() : getManualTheme());
+                    var item = new CustomToolStripMenuItem(
+                        entityName,
+                        iconImage,
+                        runner,
+                        IsCustomRunnerSelected(runner, getRunner),
+                        (sender, e) => HandleCustomRunnerSelection(sender, setRunner)
+                    );
+                    items.Add(item);
+                }
+            }
+
+            DropDownItems.AddRange([.. items]);
+        }
+
+        private static Bitmap? GetRunnerThumbnailBitmap(Theme systemTheme, Theme manualTheme, Runner runner)
+        {
+            var theme = manualTheme == Theme.System ? systemTheme : manualTheme;
+            var color = theme.GetContrastColor();
+            var iconName = $"{runner.GetString()}_0".ToLower();
+            var obj = Resources.ResourceManager.GetObject(iconName);
+            if (obj is not Bitmap bitmap) return null;
+            return theme == Theme.Light ? bitmap : bitmap.Recolor(color);
+        }
+
+        private static void HandleRunnerSelection(object? sender, Action<Runner> setRunner)
+        {
+            if (sender is null) return;
+            var item = (ToolStripMenuItem)sender;
+            if (item.Tag is Runner runner)
+            {
+                setRunner(runner);
+            }
+        }
+
+        private static void HandleCustomRunnerSelection(object? sender, Action<Runner> setRunner)
+        {
+            if (sender is null) return;
+            var item = (ToolStripMenuItem)sender;
+            if (item.Tag is CustomRunner customRunner)
+            {
+                if (Enum.TryParse(customRunner.Name, out Runner parsedRunner))
+                {
+                    setRunner(parsedRunner);
+                }
+            }
+        }
+
+        private static bool IsCustomRunnerSelected(CustomRunner runner, Func<Runner> getRunner)
+        {
+            return getRunner().ToString().Equals(runner.Name, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

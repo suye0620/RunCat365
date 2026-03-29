@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI agents when working with code in this repository.
 
 ## You Must
 
-- Please respond in Japanese.
+- Please respond in Chinese.
 - Commit to Git only when instructed.
 - If multiple requirements are given in a single instruction, divide the commits into appropriate sizes/granularities.
 

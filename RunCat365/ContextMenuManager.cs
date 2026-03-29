@@ -14,6 +14,7 @@
 
 using RunCat365.Properties;
 using System.ComponentModel;
+using System.Drawing;
 
 namespace RunCat365
 {
@@ -47,20 +48,15 @@ namespace RunCat365
             systemInfoMenu.Enabled = false;
 
             var runnersMenu = new CustomToolStripMenuItem(Strings.Menu_Runner);
-            runnersMenu.SetupSubMenusFromEnum<Runner>(
-                r => r.GetLocalizedString(),
-                (parent, sender, e) =>
+            runnersMenu.SetupRunnerMenu(
+                getRunner,
+                r =>
                 {
-                    HandleMenuItemSelection<Runner>(
-                        parent,
-                        sender,
-                        (string? s, out Runner r) => Enum.TryParse(s, out r),
-                        r => setRunner(r)
-                    );
+                    setRunner(r);
                     SetIcons(getSystemTheme(), getManualTheme(), getRunner());
                 },
-                r => getRunner() == r,
-                r => GetRunnerThumbnailBitmap(getSystemTheme(), r)
+                getSystemTheme,
+                getManualTheme
             );
 
             var themeMenu = new CustomToolStripMenuItem(Strings.Menu_Theme);
@@ -120,11 +116,14 @@ namespace RunCat365
             launchAtStartupMenu.Click += (sender, e) => HandleStartupMenuClick(sender, toggleLaunchAtStartup);
 
             var settingsMenu = new CustomToolStripMenuItem(Strings.Menu_Settings);
+            var manageRunnersMenu = new CustomToolStripMenuItem(Strings.Settings_ManageRunners);
+            manageRunnersMenu.Click += (sender, e) => ShowSettingsForm(getSystemTheme, getManualTheme, setManualTheme);
             settingsMenu.DropDownItems.AddRange(
                 themeMenu,
                 speedSourceMenu,
                 fpsMaxLimitMenu,
-                launchAtStartupMenu
+                launchAtStartupMenu,
+                manageRunnersMenu
             );
 
             var endlessGameMenu = new CustomToolStripMenuItem(Strings.Menu_EndlessGame);
@@ -226,12 +225,40 @@ namespace RunCat365
                 }
             }
 
+            var customRunner = GetCustomRunner(runner);
+            if (customRunner != null)
+            {
+                list.Clear();
+                for (int i = 0; i < customRunner.FrameCount; i++)
+                {
+                    var frame = customRunner.GetFrame(i);
+                    if (frame != null)
+                    {
+                        if (theme == Theme.Light)
+                        {
+                            list.Add(frame.ToIcon());
+                        }
+                        else
+                        {
+                            using var recolored = frame.Recolor(color);
+                            list.Add(recolored.ToIcon());
+                        }
+                    }
+                }
+            }
+
             lock (iconLock)
             {
                 icons.Clear();
                 icons.AddRange(list);
                 current = 0;
             }
+        }
+
+        private static CustomRunner? GetCustomRunner(Runner runner)
+        {
+            var customRunners = CustomRunnerExtension.GetCustomRunners();
+            return customRunners.FirstOrDefault(r => r.Name.Equals(runner.ToString(), StringComparison.OrdinalIgnoreCase));
         }
 
         private static void HandleStartupMenuClick(object? sender, Func<bool, bool> toggleLaunchAtStartup)
@@ -267,6 +294,12 @@ namespace RunCat365
             {
                 endlessGameForm.Activate();
             }
+        }
+
+        private void ShowSettingsForm(Func<Theme> getSystemTheme, Func<Theme> getManualTheme, Action<Theme> setManualTheme)
+        {
+            using var settingsForm = new SettingsForm(getSystemTheme, getManualTheme, setManualTheme);
+            settingsForm.ShowDialog();
         }
 
         internal void ShowBalloonTip(BalloonTipType balloonTipType)
