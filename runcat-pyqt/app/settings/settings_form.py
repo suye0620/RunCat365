@@ -169,7 +169,6 @@ class SettingsForm(QDialog):
         
         # Set window icon
         from PyQt5.QtGui import QIcon, QPixmap
-        import os
         icon_path = os.path.join(os.path.dirname(__file__), "..", "..", "resources", "icons", "app_icon.png")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))

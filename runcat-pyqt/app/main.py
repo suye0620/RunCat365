@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction, QStyleFactory, QStyledItemDelegate
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QFontDatabase
-from PyQt5.QtCore import Qt, QTimer, QRect, QSize, QCoreApplication, QTranslator
+from PyQt5.QtCore import Qt, QTimer, QRect, QSize, QCoreApplication, QTranslator, QObject
 
 from app.monitor.cpu import CPUMonitor
 from app.monitor.memory import MemoryMonitor
@@ -24,6 +24,8 @@ from app.animation.custom_runner import CustomRunnerManager
 from app.animation.theme import ThemeManager
 from app.settings.settings_manager import SettingsManager
 from app.settings.settings_form import SettingsForm
+from app.floating.floating_ball import FloatingBall
+from app.widgets.system_info_tooltip import SystemInfoTooltip
 
 class Translator:
     """Language translator"""
@@ -66,7 +68,10 @@ class Translator:
                 "Built-in runners cannot be removed.": "Built-in runners cannot be removed.",
                 "Are you sure you want to remove runner '{}'?": "Are you sure you want to remove runner '{}'?",
                 "Successfully removed runner: {}": "Successfully removed runner: {}",
-                "Failed to remove runner.": "Failed to remove runner."
+                "Failed to remove runner.": "Failed to remove runner.",
+                "Adjust Opacity": "Adjust Opacity",
+                "OK": "OK",
+                "Size": "Size"
             },
             "中文": {
                 "Runner": "角色",
@@ -104,7 +109,10 @@ class Translator:
                 "Built-in runners cannot be removed.": "内置角色不能删除。",
                 "Are you sure you want to remove runner '{}'?": "确定要删除角色 '{}' 吗？",
                 "Successfully removed runner: {}": "成功删除角色: {}",
-                "Failed to remove runner.": "删除角色失败。"
+                "Failed to remove runner.": "删除角色失败。",
+                "Adjust Opacity": "调整透明度",
+                "OK": "确定",
+                "Size": "大小"
             },
             "中文繁体": {
                 "Runner": "角色",
@@ -143,7 +151,10 @@ class Translator:
                 "Built-in runners cannot be removed.": "內建角色不能刪除。",
                 "Are you sure you want to remove runner '{}'?": "確定要刪除角色 '{}' 嗎？",
                 "Successfully removed runner: {}": "成功刪除角色: {}",
-                "Failed to remove runner.": "刪除角色失敗。"
+                "Failed to remove runner.": "刪除角色失敗。",
+                "Adjust Opacity": "調整透明度",
+                "OK": "確定",
+                "Size": "大小"
             }
         }
     
@@ -158,10 +169,11 @@ class Translator:
 
 
 
-class RunCatApp:
+class RunCatApp(QObject):
     """Main RunCat application class"""
     
     def __init__(self):
+        super().__init__()
         self.app = QApplication(sys.argv)
         self.app.setQuitOnLastWindowClosed(False)
         
@@ -284,6 +296,18 @@ class RunCatApp:
         self.memory_monitor = MemoryMonitor()
         self.network_monitor = NetworkMonitor()
         
+        # Create system info tooltip
+        self.system_info_tooltip = SystemInfoTooltip()
+        self.system_info_tooltip.set_monitors(self.cpu_monitor, self.memory_monitor, self.network_monitor)
+        # Set initial theme
+        current_theme = self.theme_manager.get_theme()
+        is_dark = False
+        if current_theme.theme_name == "Dark":
+            is_dark = True
+        elif current_theme.theme_name == "System":
+            is_dark = current_theme.is_system_dark()
+        self.system_info_tooltip.set_theme(is_dark)
+        
         # Create system tray icon
         self.tray = QSystemTrayIcon()
         
@@ -317,9 +341,25 @@ class RunCatApp:
         # Add tray icon clicked event
         self.tray.activated.connect(self._tray_activated)
         
+        # Add event filter for tray icon hover events
+        self.tray.installEventFilter(self)
+        # Timer for tray hover
+        self.tray_hover_timer = QTimer(self)
+        self.tray_hover_timer.setSingleShot(True)
+        self.tray_hover_timer.timeout.connect(self._show_tray_tooltip)
+        # Variable to track if tooltip is shown for tray
+        self.tray_tooltip_shown = False
+        
         # Animation variables
         self.current_frame = 0
         self.frames = []
+        
+        # Initialize floating ball
+        self.floating_ball = FloatingBall(self.runner_manager, self.theme_manager, self.floating_ball_opacity)
+        # Set tooltip for floating ball
+        self.floating_ball.set_tooltip(self.system_info_tooltip)
+        if self.floating_ball_enabled:
+            self.floating_ball.show()
         
         # Show tray icon
         self.tray.show()
@@ -359,6 +399,10 @@ class RunCatApp:
         
         # Load language
         self.language = self.settings_manager.get_language()
+        
+        # Load floating ball settings
+        self.floating_ball_enabled = self.settings_manager.get_floating_ball_enabled()
+        self.floating_ball_opacity = self.settings_manager.get_floating_ball_opacity()
     
     def _setup_menu(self):
         """Setup context menu"""
@@ -407,6 +451,11 @@ class RunCatApp:
         self.language_menu = QMenu(self.translator.translate("Language", self.language))
         self._setup_language_menu()
         self.menu.addMenu(self.language_menu)
+        
+        # Floating Ball
+        self.floating_ball_menu = QMenu(self.translator.translate("Floating Ball", self.language))
+        self._setup_floating_ball_menu()
+        self.menu.addMenu(self.floating_ball_menu)
         
         # Information
         self.info_menu = QMenu(self.translator.translate("Information", self.language))
@@ -580,6 +629,71 @@ class RunCatApp:
             action.triggered.connect(partial(self._select_language, language))
             self.language_menu.addAction(action)
     
+    def _setup_floating_ball_menu(self):
+        """Setup floating ball menu"""
+        # Clear existing items
+        self.floating_ball_menu.clear()
+        
+        # Add show/hide action
+        show_hide_action = QAction(self.translator.translate("Show", self.language) if not self.floating_ball_enabled else self.translator.translate("Hide", self.language), self.floating_ball_menu)
+        show_hide_action.setCheckable(True)
+        show_hide_action.setChecked(self.floating_ball_enabled)
+        show_hide_action.triggered.connect(self._toggle_floating_ball)
+        self.floating_ball_menu.addAction(show_hide_action)
+        
+        # Add opacity adjustment action
+        from PyQt5.QtWidgets import QWidget, QSlider, QLabel, QHBoxLayout, QWidgetAction
+        
+        opacity_widget = QWidget()
+        opacity_layout = QHBoxLayout()
+        opacity_layout.setContentsMargins(10, 5, 10, 5)
+        
+        opacity_label = QLabel(self.translator.translate("Opacity", self.language))
+        opacity_layout.addWidget(opacity_label)
+        
+        opacity_slider = QSlider(Qt.Horizontal)
+        opacity_slider.setRange(10, 100)
+        opacity_slider.setValue(int(self.floating_ball_opacity * 100))
+        opacity_slider.setFixedWidth(100)
+        # 确保滑块有足够的高度和样式，避免被覆盖
+        opacity_slider.setMinimumHeight(20)
+        opacity_slider.setStyleSheet("""
+            QSlider::groove:horizontal {
+                border: 1px solid #999999;
+                height: 8px;
+                background: #cccccc;
+                margin: 2px 0;
+                border-radius: 4px;
+            }
+            QSlider::handle:horizontal {
+                background: #3366cc;
+                border: 1px solid #3366cc;
+                width: 16px;
+                height: 16px;
+                margin: -4px 0;
+                border-radius: 8px;
+            }
+        """)
+        opacity_slider.valueChanged.connect(self._adjust_floating_ball_opacity)
+        opacity_layout.addWidget(opacity_slider)
+        
+        # Add opacity value label
+        opacity_value_label = QLabel(f"{int(self.floating_ball_opacity * 100)}%")
+        opacity_value_label.setFixedWidth(40)
+        opacity_layout.addWidget(opacity_value_label)
+        
+        # Update value label when slider changes
+        def update_opacity_label(value):
+            opacity_value_label.setText(f"{value}%")
+        
+        opacity_slider.valueChanged.connect(update_opacity_label)
+        
+        opacity_widget.setLayout(opacity_layout)
+        
+        opacity_action = QWidgetAction(self.floating_ball_menu)
+        opacity_action.setDefaultWidget(opacity_widget)
+        self.floating_ball_menu.addAction(opacity_action)
+    
     def _select_language(self, language):
         """Select language"""
         # Update language setting
@@ -593,6 +707,51 @@ class RunCatApp:
         with open("debug.log", "a") as f:
             f.write(f"Language changed to: {language}\n")
     
+    def _toggle_floating_ball(self, checked):
+        """Toggle floating ball visibility"""
+        self.floating_ball_enabled = checked
+        self.settings_manager.set_floating_ball_enabled(checked)
+        if checked:
+            self.floating_ball.show()
+        else:
+            self.floating_ball.hide()
+        # Update the menu
+        self._setup_floating_ball_menu()
+    
+    def _adjust_floating_ball_opacity(self, value):
+        """Adjust floating ball opacity"""
+        opacity = value / 100.0
+        self.floating_ball_opacity = opacity
+        self.settings_manager.set_floating_ball_opacity(opacity)
+        self.floating_ball.set_opacity(opacity)
+    
+    def eventFilter(self, obj, event):
+        """Event filter for tray icon hover events"""
+        if obj == self.tray:
+            if event.type() == event.Enter:
+                # Mouse entered tray icon, start timer to show tooltip
+                self.tray_hover_timer.start(500)  # 500ms delay
+            elif event.type() == event.Leave:
+                # Mouse left tray icon, hide tooltip if shown
+                self.tray_hover_timer.stop()
+                if self.tray_tooltip_shown:
+                    self.system_info_tooltip.hide()
+                    self.tray_tooltip_shown = False
+        return super().eventFilter(obj, event)
+    
+    def _show_tray_tooltip(self):
+        """Show system info tooltip near tray icon"""
+        # Get tray icon geometry
+        tray_geometry = self.tray.geometry()
+        if tray_geometry.isValid():
+            # Create a temporary widget to represent the tray icon position
+            from PyQt5.QtWidgets import QWidget
+            temp_widget = QWidget()
+            temp_widget.setGeometry(tray_geometry)
+            # Show tooltip near the temporary widget
+            self.system_info_tooltip.show_near_widget(temp_widget)
+            self.tray_tooltip_shown = True
+    
     def _select_runner(self, runner_name):
         """Select runner"""
         self.runner_manager.set_current_runner(runner_name)
@@ -600,6 +759,8 @@ class RunCatApp:
         # Reset current frame to 0 when switching runners
         self.current_frame = 0
         self._load_frames()
+        # Update floating ball frames
+        self.floating_ball.update_frames()
         # Update only the runner menu to update the checked state
         self._setup_runner_menu()
     
@@ -607,8 +768,18 @@ class RunCatApp:
         """Select theme"""
         self.theme_manager.set_theme(theme_name)
         self.theme_manager.apply_theme(self.app)
+        # Update system info tooltip theme
+        current_theme = self.theme_manager.get_theme()
+        is_dark = False
+        if current_theme.theme_name == "Dark":
+            is_dark = True
+        elif current_theme.theme_name == "System":
+            is_dark = current_theme.is_system_dark()
+        self.system_info_tooltip.set_theme(is_dark)
         self.settings_manager.set_theme(theme_name)
         self._load_frames()
+        # Update floating ball frames
+        self.floating_ball.update_frames()
         # Recreate the menu to ensure theme is applied correctly
         self._setup_menu()
         # Reapply style and palette to menu
@@ -741,16 +912,15 @@ class RunCatApp:
         self.memory_monitor.update()
         self.network_monitor.update()
         
-        # Update system tray tooltip
-        tooltip = ""
-        if self.speed_source == "CPU":
-            tooltip = self.cpu_monitor.get_description()
-        elif self.speed_source == "Memory":
-            tooltip = self.memory_monitor.get_description()
-        elif self.speed_source == "Network":
-            tooltip = self.network_monitor.get_description()
+        # Update system tray tooltip with all system info
+        cpu_usage = self.cpu_monitor.get_usage()
+        memory_usage = self.memory_monitor.get_usage()
+        speed_sent = self.network_monitor.get_speed_sent() / 1024  # KB/s
+        speed_recv = self.network_monitor.get_speed_recv() / 1024  # KB/s
+        total_speed = speed_sent + speed_recv
         
-        self.tray.setToolTip(f"RunCat365 - {tooltip}")
+        tooltip = f"CPU: {cpu_usage:.1f}% \nMemory: {memory_usage:.1f}% \nNetwork: {total_speed:.1f} KB/s"
+        self.tray.setToolTip(f"RunCat365 \n{tooltip}")
         
         # System load is now calculated in _advance_frame method
         # to ensure smooth transition between frames
@@ -761,5 +931,7 @@ class RunCatApp:
 
 
 if __name__ == "__main__":
+    print("Starting RunCat365...")
     app = RunCatApp()
+    print("RunCat365 started successfully!")
     app.run()

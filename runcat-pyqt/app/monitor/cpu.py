@@ -17,7 +17,9 @@ class CPUMonitor:
     def update(self):
         """Update CPU usage data"""
         try:
-            self.cpu_percent = psutil.cpu_percent(interval=0.1)
+            # Use interval=None to get instantaneous CPU usage (matches Task Manager)
+            # First call returns 0.0, subsequent calls return the usage since last call
+            self.cpu_percent = psutil.cpu_percent(interval=None)
         except Exception:
             self.cpu_percent = 0.0
     

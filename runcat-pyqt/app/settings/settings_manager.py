@@ -24,7 +24,9 @@ class SettingsManager:
             "speed_source": "CPU",
             "fps_max_limit": "FPS40",
             "launch_at_startup": False,
-            "language": "English"
+            "language": "English",
+            "floating_ball_enabled": True,
+            "floating_ball_opacity": 0.8
         }
         
         if os.path.exists(self.settings_file):
@@ -100,3 +102,19 @@ class SettingsManager:
     def set_language(self, language):
         """Set current language"""
         return self.set_setting("language", language)
+    
+    def get_floating_ball_enabled(self):
+        """Get floating ball enabled status"""
+        return self.get_setting("floating_ball_enabled", False)
+    
+    def set_floating_ball_enabled(self, enabled):
+        """Set floating ball enabled status"""
+        return self.set_setting("floating_ball_enabled", enabled)
+    
+    def get_floating_ball_opacity(self):
+        """Get floating ball opacity"""
+        return self.get_setting("floating_ball_opacity", 0.8)
+    
+    def set_floating_ball_opacity(self, opacity):
+        """Set floating ball opacity"""
+        return self.set_setting("floating_ball_opacity", opacity)

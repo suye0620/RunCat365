@@ -75,7 +75,19 @@ class RunnerManager:
     
     def get_current_runner(self):
         """Get current runner"""
-        return self.get_runner(self.current_runner)
+        # First try to get built-in runner
+        runner = self.get_runner(self.current_runner)
+        if runner:
+            return runner
+        
+        # If not found, try to get custom runner
+        try:
+            from app.animation.custom_runner import CustomRunnerManager
+            custom_runner_manager = CustomRunnerManager()
+            custom_runner_manager.load_custom_runners()
+            return custom_runner_manager.get_custom_runner(self.current_runner)
+        except:
+            return None
     
     def set_current_runner(self, name):
         """Set current runner"""
