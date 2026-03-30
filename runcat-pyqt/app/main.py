@@ -70,6 +70,7 @@ class Translator:
                 "Successfully removed runner: {}": "Successfully removed runner: {}",
                 "Failed to remove runner.": "Failed to remove runner.",
                 "Adjust Opacity": "Adjust Opacity",
+                "Opacity": "Opacity",
                 "OK": "OK",
                 "Size": "Size"
             },
@@ -111,6 +112,7 @@ class Translator:
                 "Successfully removed runner: {}": "成功删除角色: {}",
                 "Failed to remove runner.": "删除角色失败。",
                 "Adjust Opacity": "调整透明度",
+                "Opacity": "透明度",
                 "OK": "确定",
                 "Size": "大小"
             },
@@ -153,6 +155,7 @@ class Translator:
                 "Successfully removed runner: {}": "成功刪除角色: {}",
                 "Failed to remove runner.": "刪除角色失敗。",
                 "Adjust Opacity": "調整透明度",
+                "Opacity": "透明度",
                 "OK": "確定",
                 "Size": "大小"
             }
@@ -355,7 +358,7 @@ class RunCatApp(QObject):
         self.frames = []
         
         # Initialize floating ball
-        self.floating_ball = FloatingBall(self.runner_manager, self.theme_manager, self.floating_ball_opacity)
+        self.floating_ball = FloatingBall(self.runner_manager, self.theme_manager, self.floating_ball_opacity, int(self.floating_ball_size))
         # Set tooltip for floating ball
         self.floating_ball.set_tooltip(self.system_info_tooltip)
         if self.floating_ball_enabled:
@@ -372,9 +375,15 @@ class RunCatApp(QObject):
         self.animate_timer.timeout.connect(self._advance_frame)
         self.animate_timer.start(200)
         
+        # Timer for updating animation speed (every 5 seconds)
+        self.speed_update_timer = QTimer()
+        self.speed_update_timer.timeout.connect(self._update_animation_speed)
+        self.speed_update_timer.start(5000)  # 5000毫秒 = 5秒
+        
+        # Timer for updating system info (real-time)
         self.fetch_timer = QTimer()
         self.fetch_timer.timeout.connect(self._fetch_system_info)
-        self.fetch_timer.start(5000)  # 5000毫秒 = 5秒
+        self.fetch_timer.start(500)  # 500毫秒 = 0.5秒 (更实时)
     
     def _load_settings(self):
         """Load settings"""
@@ -403,6 +412,7 @@ class RunCatApp(QObject):
         # Load floating ball settings
         self.floating_ball_enabled = self.settings_manager.get_floating_ball_enabled()
         self.floating_ball_opacity = self.settings_manager.get_floating_ball_opacity()
+        self.floating_ball_size = self.settings_manager.get_floating_ball_size()
     
     def _setup_menu(self):
         """Setup context menu"""
@@ -644,6 +654,7 @@ class RunCatApp(QObject):
         # Add opacity adjustment action
         from PyQt5.QtWidgets import QWidget, QSlider, QLabel, QHBoxLayout, QWidgetAction
         
+        # Opacity slider
         opacity_widget = QWidget()
         opacity_layout = QHBoxLayout()
         opacity_layout.setContentsMargins(10, 5, 10, 5)
@@ -693,6 +704,115 @@ class RunCatApp(QObject):
         opacity_action = QWidgetAction(self.floating_ball_menu)
         opacity_action.setDefaultWidget(opacity_widget)
         self.floating_ball_menu.addAction(opacity_action)
+        
+        # Add size adjustment action
+        size_widget = QWidget()
+        size_layout = QHBoxLayout()
+        size_layout.setContentsMargins(10, 5, 10, 5)
+        
+        size_label = QLabel(self.translator.translate("Size", self.language))
+        size_layout.addWidget(size_label)
+        
+        size_slider = QSlider(Qt.Horizontal)
+        size_slider.setRange(0, 2)  # 0: S(32px), 1: M(64px), 2: L(96px)
+        
+        # Check if current runner has multiple sizes available
+        current_runner = self.runner_manager.get_current_runner()
+        has_multiple_sizes = False
+        available_sizes = []
+        
+        if current_runner:
+            # Check if 64x64 and 96x96 exist
+            # For built-in runners: only 32x32 available -> always False
+            # For custom runners: check directories
+            from app.animation.custom_runner import CustomRunner
+            if isinstance(current_runner, CustomRunner):
+                # Custom runner: check if size directories exist
+                runner_folder = current_runner.folder_path
+                if os.path.exists(os.path.join(runner_folder, "64x64")) and os.path.exists(os.path.join(runner_folder, "96x96")):
+                    has_multiple_sizes = True
+                    available_sizes = [32, 64, 96]
+                elif os.path.exists(os.path.join(runner_folder, "64x64")):
+                    has_multiple_sizes = True
+                    available_sizes = [32, 64]
+                else:
+                    available_sizes = [32]
+            else:
+                # Built-in runner: only 32x32 available
+                available_sizes = [32]
+        else:
+            available_sizes = [32]
+        
+        # Map current size to slider value, disable slider if only one size
+        size_map = {32: 0, 64: 1, 96: 2}
+        size_labels = {32: "S", 64: "M", 96: "L"}
+        current_size_value = size_map.get(self.floating_ball_size, 2)  # Default to 96px
+        size_slider.setValue(current_size_value)
+        size_slider.setEnabled(has_multiple_sizes)
+        size_slider.setFixedWidth(100)
+        size_slider.setMinimumHeight(20)
+        size_slider.setStyleSheet("""
+            QSlider::groove:horizontal {
+                border: 1px solid #999999;
+                height: 8px;
+                background: #cccccc;
+                margin: 2px 0;
+                border-radius: 4px;
+            }
+            QSlider::handle:horizontal {
+                background: #3366cc;
+                border: 1px solid #3366cc;
+                width: 16px;
+                height: 16px;
+                margin: -4px 0;
+                border-radius: 8px;
+            }
+            QSlider::disabled:horizontal {
+                background: #eeeeee;
+            }
+            QSlider::handle:disabled:horizontal {
+                background: #aaaaaa;
+                border: 1px solid #aaaaaa;
+            }
+        """)
+        # Add size value label (show S/M/L instead of pixels)
+        current_label = size_labels.get(self.floating_ball_size, size_labels.get(available_sizes[-1], "S"))
+        size_value_label = QLabel(current_label)
+        size_value_label.setFixedWidth(40)
+        size_layout.addWidget(size_value_label)
+        
+        # Update size when slider changes
+        def update_floating_ball_size(value):
+            size_options = [32, 64, 96]
+            if len(available_sizes) == 1:
+                # Only one size available, keep current size
+                new_size = available_sizes[0]
+                size_value_label.setText(size_labels.get(new_size, "S"))
+                return
+            elif len(available_sizes) == 2:
+                # Only 32 and 64 available
+                available_options = [32, 64]
+                if value >= len(available_options):
+                    value = len(available_options) - 1
+                new_size = available_options[value]
+            else:
+                # All three sizes available
+                new_size = size_options[value]
+            
+            self.floating_ball.set_size(new_size)
+            self.floating_ball_size = new_size
+            self.settings_manager.set_floating_ball_size(new_size)
+            size_value_label.setText(size_labels.get(new_size, "S"))
+        
+        size_slider.valueChanged.connect(update_floating_ball_size)
+        size_layout.addWidget(size_slider)
+        size_layout.addWidget(size_value_label)
+        
+        size_widget.setLayout(size_layout)
+        
+        size_action = QWidgetAction(self.floating_ball_menu)
+        size_action.setDefaultWidget(size_widget)
+        self.floating_ball_menu.addAction(size_action)
     
     def _select_language(self, language):
         """Select language"""
@@ -763,6 +883,8 @@ class RunCatApp(QObject):
         self.floating_ball.update_frames()
         # Update only the runner menu to update the checked state
         self._setup_runner_menu()
+        # Update floating ball menu to reflect available sizes for current runner
+        self._setup_floating_ball_menu()
     
     def _select_theme(self, theme_name):
         """Select theme"""
@@ -833,7 +955,7 @@ class RunCatApp(QObject):
         return QIcon(pixmap)
     
     def _load_frames(self):
-        """Load animation frames"""
+        """Load animation frames for tray icon (always 32x32)"""
         # First check if it's a custom runner
         self.custom_runner_manager.load_custom_runners()
         custom_runner = self.custom_runner_manager.get_custom_runner(self.runner_manager.current_runner)
@@ -843,8 +965,10 @@ class RunCatApp(QObject):
             f.write(f"Current runner: {self.runner_manager.current_runner}\n")
             f.write(f"Custom runner found: {custom_runner is not None}\n")
         
+        # Tray icon always uses 32x32
+        tray_size = (32, 32)
         if custom_runner:
-            custom_runner.load_frames(self.theme_manager.get_theme())
+            custom_runner.load_frames(self.theme_manager.get_theme(), tray_size)
             self.frames = custom_runner.get_frames()
             # Debug: Check custom runner frames
             with open("debug.log", "a") as f:
@@ -853,7 +977,7 @@ class RunCatApp(QObject):
             # If not a custom runner, load built-in runner
             current_runner = self.runner_manager.get_current_runner()
             if current_runner:
-                current_runner.load_frames(self.theme_manager.get_theme())
+                current_runner.load_frames(self.theme_manager.get_theme(), tray_size)
                 self.frames = current_runner.get_frames()
                 # Debug: Check built-in runner frames
                 with open("debug.log", "a") as f:
@@ -871,39 +995,36 @@ class RunCatApp(QObject):
     def _advance_frame(self):
         """Advance animation frame"""
         if self.frames:
-            # Check if we're at the last frame
-            is_last_frame = (self.current_frame == len(self.frames) - 1)
-            
             # Advance to next frame
             self.current_frame = (self.current_frame + 1) % len(self.frames)
             
             # Use setIcon directly without any delay
             self.tray.setIcon(self.frames[self.current_frame])
-            
-            # If we were at the last frame, prepare for the next cycle
-            if is_last_frame:
-                # Stop the animation timer temporarily
-                self.animate_timer.stop()
-                
-                # Calculate new interval based on current system load
-                load = 0
-                if self.speed_source == "CPU":
-                    load = self.cpu_monitor.get_usage()
-                elif self.speed_source == "Memory":
-                    load = self.memory_monitor.get_usage()
-                elif self.speed_source == "Network":
-                    load = max(self.network_monitor.get_speed_sent(), self.network_monitor.get_speed_recv()) / 1024 / 1024  # MB/s
-                
-                # Calculate interval based on load and FPS limit
-                fps = int(self.fps_max_limit.replace("FPS", ""))
-                speed = max(1.0, (load / 5.0) * (fps / 40.0))
-                interval = int(500.0 / speed)
-                
-                # Update animation timer interval
-                self.animate_timer.setInterval(interval)
-                
-                # Restart the animation timer
-                self.animate_timer.start()
+    
+    def _update_animation_speed(self):
+        """Update animation speed based on system load (every 2 seconds)"""
+        # Update monitors first to get current system load
+        self.cpu_monitor.update()
+        self.memory_monitor.update()
+        self.network_monitor.update()
+        
+        # Calculate system load based on selected speed source
+        load = 0
+        if self.speed_source == "CPU":
+            load = self.cpu_monitor.get_usage()
+        elif self.speed_source == "Memory":
+            load = self.memory_monitor.get_usage()
+        elif self.speed_source == "Network":
+            load = max(self.network_monitor.get_speed_sent(), self.network_monitor.get_speed_recv()) / 1024 / 1024  # MB/s
+        
+        # Calculate new interval based on load and FPS limit
+        fps = int(self.fps_max_limit.replace("FPS", ""))
+        speed = max(1.0, (load / 5.0) * (fps / 40.0))
+        interval = int(500.0 / speed)
+        
+        # Update animation timer interval only for tray icon
+        # Floating ball keeps fixed speed (200ms)
+        self.animate_timer.setInterval(interval)
     
     def _fetch_system_info(self):
         """Fetch system information"""
@@ -921,9 +1042,6 @@ class RunCatApp(QObject):
         
         tooltip = f"CPU: {cpu_usage:.1f}% \nMemory: {memory_usage:.1f}% \nNetwork: {total_speed:.1f} KB/s"
         self.tray.setToolTip(f"RunCat365 \n{tooltip}")
-        
-        # System load is now calculated in _advance_frame method
-        # to ensure smooth transition between frames
     
     def run(self):
         """Run the application"""

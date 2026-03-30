@@ -1660,3 +1660,369 @@ Runner menu actions: 6
 Current runner: 线条小狗小白
 Custom runner found: True
 Custom runner frames count: 12
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['mona-whisper', '线条小狗小白']
+Added custom runner 0: mona-whisper
+Added custom runner 1: 线条小狗小白
+Runner menu actions: 6
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['mona-whisper', '线条小狗小白']
+Added custom runner 0: mona-whisper
+Added custom runner 1: 线条小狗小白
+Runner menu actions: 6
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 1
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['mona-whisper', '线条小狗小白']
+Added custom runner 0: mona-whisper
+Added custom runner 1: 线条小狗小白
+Runner menu actions: 6
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 1
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['mona-whisper', '线条小狗小白']
+Added custom runner 0: mona-whisper
+Added custom runner 1: 线条小狗小白
+Runner menu actions: 6
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 1
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['mona-whisper', '线条小狗小白']
+Added custom runner 0: mona-whisper
+Added custom runner 1: 线条小狗小白
+Runner menu actions: 6
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: []
+Runner menu actions: 3
+Current runner: 线条小狗小白
+Custom runner found: False
+Current runner: Cat
+Custom runner found: False
+Built-in runner frames count: 5
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: []
+Runner menu actions: 3
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['贴贴米糕狗']
+Added custom runner 0: 贴贴米糕狗
+Runner menu actions: 5
+Current runner: 贴贴米糕狗
+Custom runner found: True
+Custom runner frames count: 14
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['贴贴米糕狗']
+Added custom runner 0: 贴贴米糕狗
+Runner menu actions: 5
+Current runner: Parrot
+Custom runner found: False
+Built-in runner frames count: 1
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['贴贴米糕狗']
+Added custom runner 0: 贴贴米糕狗
+Runner menu actions: 5
+Current runner: Cat
+Custom runner found: False
+Built-in runner frames count: 1
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['贴贴米糕狗']
+Added custom runner 0: 贴贴米糕狗
+Runner menu actions: 5
+Current runner: Parrot
+Custom runner found: False
+Built-in runner frames count: 1
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['贴贴米糕狗']
+Added custom runner 0: 贴贴米糕狗
+Runner menu actions: 5
+Current runner: Horse
+Custom runner found: False
+Built-in runner frames count: 1
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['贴贴米糕狗']
+Added custom runner 0: 贴贴米糕狗
+Runner menu actions: 5
+Current runner: 贴贴米糕狗
+Custom runner found: True
+Custom runner frames count: 14
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['贴贴米糕狗']
+Added custom runner 0: 贴贴米糕狗
+Runner menu actions: 5
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['贴贴米糕狗']
+Added custom runner 0: 贴贴米糕狗
+Runner menu actions: 5
+Current runner: 贴贴米糕狗
+Custom runner found: True
+Custom runner frames count: 14
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 贴贴米糕狗
+Runner menu actions: 6
+Current runner: 布丁狗
+Custom runner found: True
+Custom runner frames count: 4
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 贴贴米糕狗
+Runner menu actions: 6
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 贴贴米糕狗
+Runner menu actions: 6
+Current runner: 布丁狗
+Custom runner found: True
+Custom runner frames count: 4
+Current runner: 布丁狗
+Custom runner found: True
+Custom runner frames count: 4
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 贴贴米糕狗
+Runner menu actions: 6
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 贴贴米糕狗
+Runner menu actions: 6
+Current runner: 布丁狗
+Custom runner found: True
+Custom runner frames count: 4
+Current runner: 贴贴米糕狗
+Custom runner found: True
+Custom runner frames count: 14
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 贴贴米糕狗
+Runner menu actions: 6
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 贴贴米糕狗
+Runner menu actions: 6
+Current runner: 贴贴米糕狗
+Custom runner found: True
+Custom runner frames count: 14
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 12
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 12
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 12
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 12
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Language changed to: 中文繁体
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 12
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Language changed to: 中文
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Language changed to: English
+Runner manager initialized with runners: ['Cat', 'Parrot', 'Horse']
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 12
+Current runner: 线条小狗小白
+Custom runner found: True
+Custom runner frames count: 12
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7
+Current runner: 布丁狗
+Custom runner found: True
+Custom runner frames count: 4
+Available runners: ['Cat', 'Parrot', 'Horse']
+Added runner 0: Cat
+Added runner 1: Parrot
+Added runner 2: Horse
+Available custom runners: ['布丁狗', '线条小狗小白', '贴贴米糕狗']
+Added custom runner 0: 布丁狗
+Added custom runner 1: 线条小狗小白
+Added custom runner 2: 贴贴米糕狗
+Runner menu actions: 7

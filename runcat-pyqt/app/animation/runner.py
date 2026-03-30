@@ -17,8 +17,10 @@ class Runner:
         self.frame_count = frame_count
         self.frames = []
     
-    def load_frames(self, theme):
-        """Load animation frames"""
+    def load_frames(self, theme, size=None):
+        """Load animation frames with specified size
+        size: (width, height) or None for default 32x32
+        """
         pass
     
     def get_frames(self):
@@ -40,13 +42,29 @@ class BuiltinRunner(Runner):
     def __init__(self, name, frame_count):
         super().__init__(name, frame_count)
     
-    def load_frames(self, theme):
+    def load_frames(self, theme, size=None):
         """Load animation frames from resources"""
         self.frames = []
+        if not size:
+            size = (32, 32)
         resource_path = os.path.join(os.path.dirname(__file__), "..", "..", "resources", "runners", self.name.lower())
         
         for i in range(self.frame_count):
-            frame_path = os.path.join(resource_path, f"{self.name.lower()}_{i}.png")
+            # Try new directory structure first: {size}/frame_{i}.png
+            size_folder = f"{size[0]}x{size[1]}"
+            frame_path = os.path.join(resource_path, size_folder, f"frame_{i}.png")
+            
+            # If new structure doesn't exist, try old formats
+            if not os.path.exists(frame_path):
+                if size:
+                    # Old multi-size format: {name}_{i}_{size}x{size}.png
+                    frame_path = os.path.join(resource_path, f"{self.name.lower()}_{i}_{size[0]}x{size[1]}.png")
+                    if not os.path.exists(frame_path):
+                        # Old single-size format: {name}_{i}.png
+                        frame_path = os.path.join(resource_path, f"{self.name.lower()}_{i}.png")
+                else:
+                    frame_path = os.path.join(resource_path, f"{self.name.lower()}_{i}.png")
+            
             if os.path.exists(frame_path):
                 pixmap = QPixmap(frame_path)
                 # Apply theme if needed
@@ -54,7 +72,7 @@ class BuiltinRunner(Runner):
         
         # If no frames loaded, create a default frame
         if not self.frames:
-            pixmap = QPixmap(32, 32)
+            pixmap = QPixmap(size[0], size[1])
             self.frames = [QIcon(pixmap)]
 
 

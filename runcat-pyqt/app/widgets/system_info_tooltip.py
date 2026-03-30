@@ -32,7 +32,7 @@ class SystemInfoTooltip(QWidget):
         # Update timer
         self.update_timer = QTimer(self)
         self.update_timer.timeout.connect(self.update_info)
-        self.update_timer.start(1000)  # 1秒更新一次
+        self.update_timer.start(500)  # 0.5秒更新一次 (与主程序同步)
         
         # Hide initially
         self.hide()
@@ -110,6 +110,10 @@ class SystemInfoTooltip(QWidget):
             speed_recv = self.network_monitor.get_speed_recv() / 1024  # KB/s
             total_speed = speed_sent + speed_recv
             self.network_label.setText(f"Network: {total_speed:.1f} KB/s")
+        
+        # Force repaint to ensure the UI updates immediately
+        if self.isVisible():
+            self.repaint()
     
     def set_theme(self, is_dark):
         """Set theme"""
@@ -159,20 +163,23 @@ class SystemInfoTooltip(QWidget):
             widget_height = widget.height()
             
             # Get screen geometry
-            from PyQt5.QtWidgets import QDesktopWidget
-            screen_geometry = QDesktopWidget().availableGeometry()
+            from PyQt5.QtWidgets import QApplication
+            screen = QApplication.screens()[0] if QApplication.screens() else None
+            if screen:
+                screen_geometry = screen.availableGeometry()
             
             # Calculate tooltip position (above the widget, centered)
             x = widget_pos.x() + (widget_width - self.width()) // 2
             y = widget_pos.y() - self.height() - 10
             
-            # Calculate boundaries
-            max_x = screen_geometry.width() - self.width()
-            max_y = screen_geometry.height() - self.height()
-            
-            # Clamp position to screen boundaries
-            x = max(0, min(x, max_x))
-            y = max(0, min(y, max_y))
+            # Calculate boundaries and clamp position
+            if screen:
+                max_x = screen_geometry.width() - self.width()
+                max_y = screen_geometry.height() - self.height()
+                
+                # Clamp position to screen boundaries
+                x = max(0, min(x, max_x))
+                y = max(0, min(y, max_y))
             
             # Move tooltip
             self.move(x, y)

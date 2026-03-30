@@ -26,7 +26,8 @@ class SettingsManager:
             "launch_at_startup": False,
             "language": "English",
             "floating_ball_enabled": True,
-            "floating_ball_opacity": 0.8
+            "floating_ball_opacity": 0.8,
+            "floating_ball_size": 96
         }
         
         if os.path.exists(self.settings_file):
@@ -105,7 +106,7 @@ class SettingsManager:
     
     def get_floating_ball_enabled(self):
         """Get floating ball enabled status"""
-        return self.get_setting("floating_ball_enabled", False)
+        return self.get_setting("floating_ball_enabled", True)
     
     def set_floating_ball_enabled(self, enabled):
         """Set floating ball enabled status"""
@@ -118,3 +119,11 @@ class SettingsManager:
     def set_floating_ball_opacity(self, opacity):
         """Set floating ball opacity"""
         return self.set_setting("floating_ball_opacity", opacity)
+    
+    def get_floating_ball_size(self):
+        """Get floating ball size"""
+        return self.get_setting("floating_ball_size", 96)
+    
+    def set_floating_ball_size(self, size):
+        """Set floating ball size"""
+        return self.set_setting("floating_ball_size", size)
