@@ -1,5 +1,5 @@
 {
-  "runner": "布丁狗",
+  "runner": "Maltese小白工作",
   "theme": "Light",
   "speed_source": "Memory",
   "fps_max_limit": "FPS60",
@@ -7,5 +7,6 @@
   "language": "English",
   "floating_ball_enabled": true,
   "floating_ball_opacity": 1.0,
-  "floating_ball_size": 96
+  "floating_ball_size": 96,
+  "current_mode": "Work"
 }

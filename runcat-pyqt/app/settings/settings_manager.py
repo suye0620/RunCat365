@@ -27,7 +27,8 @@ class SettingsManager:
             "language": "English",
             "floating_ball_enabled": True,
             "floating_ball_opacity": 0.8,
-            "floating_ball_size": 96
+            "floating_ball_size": 96,
+            "current_mode": "Normal"
         }
         
         if os.path.exists(self.settings_file):
@@ -127,3 +128,11 @@ class SettingsManager:
     def set_floating_ball_size(self, size):
         """Set floating ball size"""
         return self.set_setting("floating_ball_size", size)
+    
+    def get_current_mode(self):
+        """Get current mode"""
+        return self.get_setting("current_mode", "Normal")
+    
+    def set_current_mode(self, mode):
+        """Set current mode"""
+        return self.set_setting("current_mode", mode)

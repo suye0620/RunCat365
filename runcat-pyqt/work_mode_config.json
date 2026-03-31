@@ -1,0 +1,9 @@
+{
+  "current_mode": "Work",
+  "pomodoro": {
+    "work_duration": 1800,
+    "is_working": true,
+    "remaining_seconds": 1800,
+    "groups": []
+  }
+}

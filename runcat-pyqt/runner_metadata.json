@@ -1,0 +1,25 @@
+{
+  "runners": {
+    "Maltese小白奔跑": {
+      "enabled_modes": [
+        "Normal",
+        "Work"
+      ],
+      "group_id": "线条小狗",
+      "action_type": "rest",
+      "is_custom": true
+    },
+    "Maltese小白工作": {
+      "enabled_modes": [
+        "Normal",
+        "Work"
+      ],
+      "group_id": "线条小狗",
+      "action_type": "work",
+      "is_custom": true
+    }
+  },
+  "groups": [
+    "线条小狗"
+  ]
+}

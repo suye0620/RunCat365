@@ -20,9 +20,7 @@ class CustomRunner:
         self.frames = []
     
     def load_frames(self, theme, size=None):
-        """Load animation frames with specified size
-        size: (width, height) or None for default 32x32
-        """
+        """Load animation frames"""
         self.frames = []
         
         if not size:

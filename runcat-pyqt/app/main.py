@@ -26,6 +26,7 @@ from app.settings.settings_manager import SettingsManager
 from app.settings.settings_form import SettingsForm
 from app.floating.floating_ball import FloatingBall
 from app.widgets.system_info_tooltip import SystemInfoTooltip
+from app.work_mode.work_mode_manager import WorkModeManager
 
 class Translator:
     """Language translator"""
@@ -72,7 +73,27 @@ class Translator:
                 "Adjust Opacity": "Adjust Opacity",
                 "Opacity": "Opacity",
                 "OK": "OK",
-                "Size": "Size"
+                "Size": "Size",
+                "Mode": "Mode",
+                "Normal": "Normal",
+                "Work": "Work",
+                "Pomodoro": "Pomodoro",
+                "Resting": "Resting",
+                "Working": "Working",
+                "Cancel Work": "Cancel Work",
+                "Start Pomodoro": "Start Pomodoro",
+                "Do you want to start a pomodoro work session?": "Do you want to start a pomodoro work session?",
+                "Pomodoro finished! Time to rest.": "Pomodoro finished! Time to rest.",
+                "No Work mode configuration": "No Work mode configuration",
+                "Please go to Manage Runners to configure groups for Work mode.": "Please go to Manage Runners to configure groups for Work mode.",
+                "No runners are configured in groups! Please go to Manage Runners and assign runners to groups first.": "No runners are configured in groups! Please go to Manage Runners and assign runners to groups first.",
+                "Paused": "Paused",
+                "Start": "Start",
+                "Pause": "Pause",
+                "Abort": "Abort",
+                "Ready": "Ready",
+                "Working": "Working",
+                "Resting": "Resting"
             },
             "中文": {
                 "Runner": "角色",
@@ -114,7 +135,27 @@ class Translator:
                 "Adjust Opacity": "调整透明度",
                 "Opacity": "透明度",
                 "OK": "确定",
-                "Size": "大小"
+                "Size": "大小",
+                "Mode": "模式",
+                "Normal": "常规",
+                "Work": "工作",
+                "Pomodoro": "番茄钟",
+                "Resting": "休息中",
+                "Working": "工作中",
+                "Cancel Work": "取消工作",
+                "Start Pomodoro": "开始番茄钟",
+                "Do you want to start a pomodoro work session?": "需要进入番茄工作时间吗？",
+                "Pomodoro finished! Time to rest.": "番茄钟结束！该休息了。",
+                "No Work mode configuration": "无工作模式配置",
+                "Please go to Manage Runners to configure groups for Work mode.": "请先前往管理角色，为工作模式配置分组。",
+                "No runners are configured in groups! Please go to Manage Runners and assign runners to groups first.": "没有任何角色被配置到分组中！请先前往管理角色，将角色分配到分组。",
+                "Paused": "已暂停",
+                "Start": "开始",
+                "Pause": "暂停",
+                "Abort": "中止",
+                "Ready": "准备开始",
+                "Working": "工作中",
+                "Resting": "休息中"
             },
             "中文繁体": {
                 "Runner": "角色",
@@ -157,7 +198,27 @@ class Translator:
                 "Adjust Opacity": "調整透明度",
                 "Opacity": "透明度",
                 "OK": "確定",
-                "Size": "大小"
+                "Size": "大小",
+                "Mode": "模式",
+                "Normal": "常規",
+                "Work": "工作",
+                "Pomodoro": "番茄鐘",
+                "Resting": "休息中",
+                "Working": "工作中",
+                "Cancel Work": "取消工作",
+                "Start Pomodoro": "開始番茄鐘",
+                "Do you want to start a pomodoro work session?": "需要進入番茄工作時間嗎？",
+                "Pomodoro finished! Time to rest.": "番茄鐘結束！該休息了。",
+                "No Work mode configuration": "無工作模式配置",
+                "Please go to Manage Runners to configure groups for Work mode.": "請先前往管理角色，為工作模式配置分組。",
+                "No runners are configured in groups! Please go to Manage Runners and assign runners to groups first.": "沒有任何角色被配置到分組中！請先前往管理角色，將角色分配到分組。",
+                "Paused": "已暫停",
+                "Start": "開始",
+                "Pause": "暫停",
+                "Abort": "中止",
+                "Ready": "準備開始",
+                "Working": "工作中",
+                "Resting": "休息中"
             }
         }
     
@@ -287,7 +348,8 @@ class RunCatApp(QObject):
             f.write(f"Runner manager initialized with runners: {self.runner_manager.get_runner_names()}\n")
         self.custom_runner_manager = CustomRunnerManager()
         self.theme_manager = ThemeManager()
-        
+        self.work_mode_manager = WorkModeManager()
+
         # Initialize translator
         self.translator = Translator()
         
@@ -302,6 +364,12 @@ class RunCatApp(QObject):
         # Create system info tooltip
         self.system_info_tooltip = SystemInfoTooltip()
         self.system_info_tooltip.set_monitors(self.cpu_monitor, self.memory_monitor, self.network_monitor)
+        self.system_info_tooltip.set_work_mode_manager(self.work_mode_manager)
+        self.system_info_tooltip.set_callbacks(
+            self._start_pomodoro_confirm,
+            self._toggle_pomodoro_pause,
+            self._cancel_pomodoro
+        )
         # Set initial theme
         current_theme = self.theme_manager.get_theme()
         is_dark = False
@@ -370,6 +438,25 @@ class RunCatApp(QObject):
         # Load frames after tray icon is shown
         self._load_frames()
         
+        # Resume work mode state from saved configuration
+        if self.work_mode_manager.is_work_mode():
+            self.work_mode_manager.resume_from_save()
+            # Connect signals (only once)
+            try:
+                self.work_mode_manager.pomodoro_tick.connect(self._update_pomodoro_menu)
+                self.work_mode_manager.pomodoro_finished.connect(self._on_pomodoro_finished)
+            except TypeError:
+                # Already connected
+                pass
+            # Switch to correct runner based on current state
+            if self.work_mode_manager.is_working():
+                self._switch_to_work()
+            else:
+                self._switch_to_rest()
+        
+        # Update tooltip mode based on current mode
+        self.system_info_tooltip.set_mode(self.current_mode)
+        
         # Setup timers
         self.animate_timer = QTimer()
         self.animate_timer.timeout.connect(self._advance_frame)
@@ -389,6 +476,7 @@ class RunCatApp(QObject):
         """Load settings"""
         # Load runner
         runner = self.settings_manager.get_runner()
+        self.normal_saved_runner = runner
         self.runner_manager.set_current_runner(runner)
         
         # Load theme
@@ -413,6 +501,9 @@ class RunCatApp(QObject):
         self.floating_ball_enabled = self.settings_manager.get_floating_ball_enabled()
         self.floating_ball_opacity = self.settings_manager.get_floating_ball_opacity()
         self.floating_ball_size = self.settings_manager.get_floating_ball_size()
+        
+        # Load current mode
+        self.current_mode = self.settings_manager.get_current_mode()
     
     def _setup_menu(self):
         """Setup context menu"""
@@ -462,10 +553,23 @@ class RunCatApp(QObject):
         self._setup_language_menu()
         self.menu.addMenu(self.language_menu)
         
+        # Mode selection
+        self.mode_menu = QMenu(self.translator.translate("Mode", self.language))
+        self._setup_mode_menu()
+        self.menu.addMenu(self.mode_menu)
+        
         # Floating Ball
         self.floating_ball_menu = QMenu(self.translator.translate("Floating Ball", self.language))
         self._setup_floating_ball_menu()
         self.menu.addMenu(self.floating_ball_menu)
+        
+        # Pomodoro status (only shown in Work mode)
+        self.pomodoro_status_action = None
+        self.pomodoro_cancel_action = None
+        self.pomodoro_start_action = None
+        if self.work_mode_manager.is_work_mode():
+            self.menu.addSeparator()
+            self._setup_pomodoro_status_menu()
         
         # Information
         self.info_menu = QMenu(self.translator.translate("Information", self.language))
@@ -844,6 +948,180 @@ class RunCatApp(QObject):
         self.floating_ball_opacity = opacity
         self.settings_manager.set_floating_ball_opacity(opacity)
         self.floating_ball.set_opacity(opacity)
+    
+    def _setup_mode_menu(self):
+        """Setup mode selection menu"""
+        # Normal mode
+        normal_action = QAction(self.translator.translate("Normal", self.language), self.mode_menu)
+        normal_action.setCheckable(True)
+        normal_action.setChecked(self.current_mode == "Normal")
+        from functools import partial
+        normal_action.triggered.connect(partial(self._select_mode, "Normal"))
+        self.mode_menu.addAction(normal_action)
+        
+        # Work mode
+        work_action = QAction(self.translator.translate("Work", self.language), self.mode_menu)
+        work_action.setCheckable(True)
+        work_action.setChecked(self.current_mode == "Work")
+        work_action.triggered.connect(partial(self._select_mode, "Work"))
+        self.mode_menu.addAction(work_action)
+    
+    def _setup_pomodoro_status_menu(self):
+        """Setup pomodoro status menu items"""
+        if self.work_mode_manager.is_working():
+            status_text = self.translator.translate("Pomodoro", self.language) + ": " + \
+                         self.translator.translate("Working", self.language) + \
+                         " (" + self.work_mode_manager.get_remaining_formatted() + ")"
+            self.pomodoro_status_action = QAction(status_text, self.menu)
+            self.pomodoro_status_action.setEnabled(False)
+            self.menu.addAction(self.pomodoro_status_action)
+            
+            self.pomodoro_cancel_action = QAction(self.translator.translate("Cancel Work", self.language), self.menu)
+            self.pomodoro_cancel_action.triggered.connect(self._cancel_pomodoro)
+            self.menu.addAction(self.pomodoro_cancel_action)
+        else:
+            status_text = self.translator.translate("Pomodoro", self.language) + ": " + \
+                         self.translator.translate("Resting", self.language)
+            self.pomodoro_status_action = QAction(status_text, self.menu)
+            self.pomodoro_status_action.setEnabled(False)
+            self.menu.addAction(self.pomodoro_status_action)
+            
+            self.pomodoro_start_action = QAction(self.translator.translate("Start Pomodoro", self.language), self.menu)
+            self.pomodoro_start_action.triggered.connect(self._start_pomodoro_confirm)
+            self.menu.addAction(self.pomodoro_start_action)
+    
+    def _select_mode(self, mode):
+        """Select mode"""
+        self.current_mode = mode
+        self.settings_manager.set_current_mode(mode)
+        self.work_mode_manager.set_current_mode(mode)
+        
+        if mode == "Normal":
+            # Switch back to saved normal runner
+            if self.runner_manager.current_runner != self.normal_saved_runner:
+                self.runner_manager.set_current_runner(self.normal_saved_runner)
+                self.settings_manager.set_runner(self.normal_saved_runner)
+                self._load_frames()
+                self.floating_ball.update_frames()
+        elif mode == "Work":
+            # Check if there is any configuration
+            if not self.work_mode_manager.has_any_configuration():
+                from PyQt5.QtWidgets import QMessageBox
+                QMessageBox.warning(None,
+                    self.translator.translate("No Work mode configuration", self.language),
+                    self.translator.translate("Please go to Manage Runners to configure groups for Work mode.", self.language)
+                )
+                # Revert back to Normal mode since we can't switch to Work
+                self.current_mode = "Normal"
+                self.settings_manager.set_current_mode("Normal")
+                self.work_mode_manager.set_current_mode("Normal")
+                # Rebuild menu immediately to correct the checked state
+                self._setup_menu()
+                return
+            
+            # Save current normal runner before switching
+            self.normal_saved_runner = self.settings_manager.get_runner()
+            # Ask user to start pomodoro
+            self._start_pomodoro_confirm()
+        
+        # Update tooltip mode based on current mode
+        self.system_info_tooltip.set_mode(self.current_mode)
+        
+        # Rebuild entire menu to show/hide pomodoro status
+        self._setup_menu()
+    
+    def _start_pomodoro_confirm(self):
+        """Ask user to confirm starting pomodoro"""
+        from PyQt5.QtWidgets import QMessageBox
+        
+        if not self.work_mode_manager.has_any_configuration():
+            QMessageBox.warning(None,
+                self.translator.translate("Pomodoro", self.language),
+                self.translator.translate("No runners are configured in groups! Please go to Manage Runners and assign runners to groups first.", self.language)
+            )
+            return
+            
+        result = QMessageBox.question(None,
+            self.translator.translate("Pomodoro", self.language),
+            self.translator.translate("Do you want to start a pomodoro work session?", self.language)
+        )
+        if result == QMessageBox.Yes:
+            self._start_pomodoro()
+        else:
+            # Switch to rest mode
+            self._switch_to_rest()
+    
+    def _start_pomodoro(self):
+        """Start pomodoro"""
+        self.work_mode_manager.start_pomodoro()
+        self._switch_to_work()
+        
+        # Connect signals
+        self.work_mode_manager.pomodoro_tick.connect(self._update_pomodoro_menu)
+        self.work_mode_manager.pomodoro_finished.connect(self._on_pomodoro_finished)
+    
+    def _cancel_pomodoro(self):
+        """Cancel current pomodoro"""
+        self.work_mode_manager.stop_pomodoro()
+        self._switch_to_rest()
+        self._setup_menu()
+    
+    def _on_pomodoro_finished(self):
+        """Called when pomodoro finishes"""
+        self._switch_to_rest()
+        self._setup_menu()
+        # Show system notification
+        self.work_mode_manager.show_system_notification(
+            self.translator.translate("Pomodoro", self.language),
+            self.translator.translate("Pomodoro finished! Time to rest.", self.language)
+        )
+    
+    def _update_pomodoro_menu(self):
+        """Update pomodoro menu display every second"""
+        if self.work_mode_manager.is_work_mode() and self.pomodoro_status_action:
+            # Only update the status text, don't rebuild entire menu
+            if self.work_mode_manager.is_working():
+                if self.work_mode_manager.is_paused():
+                    status_text = self.translator.translate("Pomodoro", self.language) + ": " + \
+                                 self.translator.translate("Paused", self.language) + \
+                                 " (" + self.work_mode_manager.get_remaining_formatted() + ")"
+                else:
+                    status_text = self.translator.translate("Pomodoro", self.language) + ": " + \
+                                 self.translator.translate("Working", self.language) + \
+                                 " (" + self.work_mode_manager.get_remaining_formatted() + ")"
+                self.pomodoro_status_action.setText(status_text)
+
+    def _toggle_pomodoro_pause(self):
+        """Toggle pause/resume for current pomodoro"""
+        if self.work_mode_manager.is_paused():
+            # Resume
+            self.work_mode_manager.resume_pomodoro()
+            self.pomodoro_dialog.set_working_state(True, self.work_mode_manager.get_remaining_seconds(), False)
+        else:
+            # Pause
+            self.work_mode_manager.pause_pomodoro()
+            self.pomodoro_dialog.set_working_state(True, self.work_mode_manager.get_remaining_seconds(), True)
+        self._setup_menu()
+    
+    def _switch_to_work(self):
+        """Switch to work runner"""
+        runner_info = self.work_mode_manager.get_random_runner_by_action_type("work")
+        if runner_info:
+            self._switch_work_mode_runner(runner_info["runner_name"])
+    
+    def _switch_to_rest(self):
+        """Switch to rest runner"""
+        runner_info = self.work_mode_manager.get_random_runner_by_action_type("rest")
+        if runner_info:
+            self._switch_work_mode_runner(runner_info["runner_name"])
+    
+    def _switch_work_mode_runner(self, runner_name):
+        """Switch runner in Work mode"""
+        # Update current runner
+        self.runner_manager.set_current_runner(runner_name)
+        self.settings_manager.set_runner(runner_name)
+        self._load_frames()
+        self.floating_ball.update_frames()
     
     def eventFilter(self, obj, event):
         """Event filter for tray icon hover events"""
